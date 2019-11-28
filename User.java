@@ -11,14 +11,15 @@ public class User{
   private boolean connected;
   private ArrayList<Article> products;
   private String IP;
-  private KeyPair keys;
+  private Key key;
 
-  public User(String username, int port, String ip){
+  public User(String username, int port, String ip, Key k){
     this.username = username;
     this.UDP = port;
     this.connected = true;
     this.products = new ArrayList<Article>();
     this.IP = ip;
+    this.key = k;
     //this.keys = new KeyPairGenerator("RSA");
   }
 
@@ -48,5 +49,11 @@ public class User{
   }
   public void set_ip(String ip){
     this.IP = ip;
+  }
+  public Key get_key(){
+    return this.key;
+  }
+  public void setKey(Key k){
+    this.key = k;
   }
 }

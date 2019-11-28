@@ -16,12 +16,16 @@ public class Client{
       String username2;
       String ip;
       String domaine;
+      /***********************Element de securité***********************/
       KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
-      kpg.initialize(2048);
+      kpg.initialize(1024);
       KeyPair kp;
       Key pub;
+      String key_pub;
+      String key_pub_distant;
       Key pvt;
       Base64.Encoder encoder = Base64.getEncoder();
+      /****************************************************************/
       String name;
       String desc;
       int prix;
@@ -57,12 +61,13 @@ public class Client{
 
             port = Integer.parseInt(sc.nextLine());
             udp_listen = port;
-            kpg.initialize(2048);
+            kpg.initialize(1024);
             kp = kpg.generateKeyPair();
             pub = kp.getPublic();
             pvt = kp.getPrivate();
-            System.out.println(encoder.encodeToString(pvt.getEncoded()));
+            key_pub = encoder.encodeToString(pub.getEncoded());
             pw.println(port);
+            pw.println(key_pub);
             pw.flush();
             pw.print("***\n");
             pw.flush();
@@ -283,15 +288,17 @@ public class Client{
             ip = br.readLine();
             String port_s = br.readLine();
             username2 = br.readLine();
+            key_pub_distant = br.readLine();
+
             br.readLine(); // Les 3 étoiles
             byte[] data;
-            String mess = "CONNECT\n"+udp_listen+"\n"+username;
+            String mess = "OK\n"ip+"\n"+udp_listen+"\n"+username+"\n"+key_pub_distant;
             //System.out.println("j'envoie "+mess);
             data = mess.getBytes();
             try{
               DatagramSocket dso = new DatagramSocket();
               System.out.println(ip.substring(1));
-              InetSocketAddress ia=new  InetSocketAddress(ip.substring(1),Integer.parseInt(port_s));
+              InetSocketAddress ia=new  InetSocketAddress("localhost",port);
               DatagramPacket paquet=new DatagramPacket(data,data.length,ia);
               dso.send(paquet);
             }catch(Exception e){e.printStackTrace();}

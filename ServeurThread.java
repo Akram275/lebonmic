@@ -2,7 +2,9 @@ import java.io.*;
 import java.net.*;
 import java.lang.*;
 import java.util.*;
-
+import java.security.*;
+import java.lang.*;
+import java.security.spec.X509EncodedKeySpec;
 
 public class ServeurThread implements Runnable{
   public Serveur s;
@@ -23,6 +25,8 @@ public class ServeurThread implements Runnable{
       System.out.println("on est dans SIGNUP");
       String username = br.readLine();
       String udp = br.readLine();
+      String key_pub = br.readLine();
+      Key k = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(key_pub.getBytes()));
       String end = br.readLine();
 
       System.out.println ("username = {" + username + "}");
@@ -60,7 +64,8 @@ public class ServeurThread implements Runnable{
       try{
         int udp_int = Integer.parseInt(udp);
         String ip = this.so.getInetAddress().toString();
-        User u = new User(username, udp_int, ip);
+        User u = new User(username, udp_int, ip, k);
+        //u.setKey(k);
         this.u = u;
         this.s.users.add(u);
         this.indice = this.s.users.size() - 1;
