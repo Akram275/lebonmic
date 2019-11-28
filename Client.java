@@ -2,7 +2,8 @@ import java.io.*;
 import java.net.*;
 import java.lang.*;
 import java.util.*;
-
+import java.security.*;
+import java.lang.*;
 public class Client{
 
 
@@ -15,6 +16,12 @@ public class Client{
       String username2;
       String ip;
       String domaine;
+      KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
+      kpg.initialize(2048);
+      KeyPair kp;
+      Key pub;
+      Key pvt;
+      Base64.Encoder encoder = Base64.getEncoder();
       String name;
       String desc;
       int prix;
@@ -22,6 +29,7 @@ public class Client{
       String rep;
       Thread t = new Thread();
       int port;
+      LauncherThread launch = null;
       int udp_listen = 0;
       String cmd;
       Socket so = new Socket("localhost", 4450); //172.28.173.21
@@ -49,6 +57,11 @@ public class Client{
 
             port = Integer.parseInt(sc.nextLine());
             udp_listen = port;
+            kpg.initialize(2048);
+            kp = kpg.generateKeyPair();
+            pub = kp.getPublic();
+            pvt = kp.getPrivate();
+            System.out.println(encoder.encodeToString(pvt.getEncoded()));
             pw.println(port);
             pw.flush();
             pw.print("***\n");
@@ -60,7 +73,8 @@ public class Client{
                 rep = "";
                 rep = br.readLine();
                 if(rep.equals("OK")){
-                  t = new Thread(new LauncherThread(udp_listen, username));
+                  launch = new LauncherThread(udp_listen, username);
+                  t = new Thread(launch);
                   t.start();
                 }
                 if(!rep.equals("***")){
@@ -75,7 +89,7 @@ public class Client{
           pw.flush();
           System.out.print("username : ");
           username = sc.nextLine();
-          System.out.println ("username = {" + username + "} + len = " + username.length());
+          //System.out.println ("username = {" + username + "} + len = " + username.length());
           pw.println(username);
           pw.flush();
           System.out.print("udp port n° : ");
@@ -92,7 +106,8 @@ public class Client{
               rep = "";
               rep = br.readLine();
               if(rep.equals("OK")){
-                t = new Thread(new LauncherThread(udp_listen, username));
+                launch = new LauncherThread(udp_listen, username);
+                t = new Thread(launch);
                 t.start();
               }
               if(!rep.equals("***")){
@@ -192,7 +207,7 @@ public class Client{
               rep = "";
               rep += br.readLine();
               if(rep.equals("OK")){
-                t.interrupt();
+                launch.proc.destroy();
               }
               if(!rep.equals("***")){
                 System.out.print("->" + rep + "\n");
@@ -245,6 +260,7 @@ public class Client{
                 System.out.print("->" + rep + "\n");
               }
             }
+            launch.proc.destroy();
             return;
 
           case "SPEAK":
@@ -267,8 +283,10 @@ public class Client{
             ip = br.readLine();
             String port_s = br.readLine();
             username2 = br.readLine();
+            br.readLine(); // Les 3 étoiles
             byte[] data;
             String mess = "CONNECT\n"+udp_listen+"\n"+username;
+            //System.out.println("j'envoie "+mess);
             data = mess.getBytes();
             try{
               DatagramSocket dso = new DatagramSocket();

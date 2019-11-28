@@ -2,7 +2,7 @@ import java.io.*;
 import java.net.*;
 import java.lang.*;
 import java.util.*;
-
+import java.security.*;
 
 
 public class User{
@@ -11,7 +11,7 @@ public class User{
   private boolean connected;
   private ArrayList<Article> products;
   private String IP;
-
+  private KeyPair keys;
 
   public User(String username, int port, String ip){
     this.username = username;
@@ -19,6 +19,7 @@ public class User{
     this.connected = true;
     this.products = new ArrayList<Article>();
     this.IP = ip;
+    //this.keys = new KeyPairGenerator("RSA");
   }
 
   public String get_username(){

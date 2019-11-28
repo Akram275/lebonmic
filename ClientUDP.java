@@ -34,15 +34,14 @@ public class ClientUDP{
     byte[] data;
 
 
-    System.out.println("------------Communications-----------");
+    System.out.println("---------------------Communications de "+cl_udp.username+"-----------");
     try{
       DatagramSocket dso = new DatagramSocket();
       while(true){
         if(cl_udp.contacts.size() == 0){
           System.out.println("Vous n'avez pour l'instant pas de contacts");
           while(cl_udp.contacts.size() == 0){
-            System.out.println(cl_udp.contacts.size());
-            Thread.sleep(3000);
+            Thread.sleep(1000);
           }
         }
         if(cl_udp.contacts.size() > 0){
