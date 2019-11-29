@@ -35,13 +35,13 @@ public class ClientUDP{
 		try{
 			DatagramSocket		dso = new DatagramSocket();
 			while (true){
-				if(cl_udp.contacts.size() == 0){
+				if (cl_udp.contacts.size() == 0){
 					System.out.println("Vous n'avez pour l'instant pas de contacts");
 					while (cl_udp.contacts.size() == 0){
 						Thread.sleep(1000);
 					}
 				}
-				if(cl_udp.contacts.size() > 0){
+				if (cl_udp.contacts.size() > 0){
 					System.out.println("A qui voulez vous envoyer de message ? : ");
 					for (int i = 0;i<cl_udp.contacts.size();i++){
 						System.out.println(" "+i+") "+cl_udp.contacts.get(i).get_username());
@@ -62,6 +62,7 @@ public class ClientUDP{
 				System.out.print("message : ");
 				s = sc.nextLine();
 				data = s.getBytes();
+				//Chiffrement AES avec u.getAESKey()
 				InetSocketAddress	ia = new InetSocketAddress(u.get_ip().substring(1),u.get_port());
 				DatagramPacket		paquet = new DatagramPacket(data,data.length,ia);
 				dso.send(paquet);
