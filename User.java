@@ -12,6 +12,7 @@ public class User{
   private ArrayList<Article> products;
   private String IP;
   private Key key;
+	private SecretKey AES_key;
 
   public User(String username, int port, String ip, Key k){
     this.username = username;
@@ -19,7 +20,9 @@ public class User{
     this.connected = true;
     this.products = new ArrayList<Article>();
     this.IP = ip;
-    this.key = k;
+	if ((k)){
+	    this.key = k;
+	}
     //this.keys = new KeyPairGenerator("RSA");
   }
 
@@ -55,5 +58,8 @@ public class User{
   }
   public void setKey(Key k){
     this.key = k;
+  }
+  public void setAesKey(SecretKey k){
+    this.AESkey = k;
   }
 }
