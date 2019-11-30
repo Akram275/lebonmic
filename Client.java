@@ -74,6 +74,7 @@ public class Client{
 						pub = kp.getPublic();
 						pvt = kp.getPrivate();
 						key_pub = encoder.encodeToString(pub.getEncoded());
+						key_priv = encoder.encodeToString(pvt.getEncoded());
 						/****************************************/
 						System.out.println(key_pub);
 						pw.println(port);
@@ -92,6 +93,18 @@ public class Client{
 								launch = new LauncherThread(udp_listen, username);
 								t = new Thread(launch);
 								t.start();
+								Thread.sleep(500);
+								byte[]		data;
+								String		mess = key_priv;
+								//System.out.println("j'envoie "+mess);
+								data = mess.getBytes();
+								try{
+									DatagramSocket		dso = new DatagramSocket();
+									//System.out.println(ip.substring(1));
+									InetSocketAddress	ia = new InetSocketAddress("localhost",udp_listen);
+									DatagramPacket		paquet = new DatagramPacket(data,data.length,ia);
+									dso.send(paquet);
+								}catch (Exception e){e.printStackTrace();}
 							}
 							if (!rep.equals("***")){
 								System.out.print("->" + rep + "\n");
