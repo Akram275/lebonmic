@@ -53,6 +53,7 @@ public class UDPListenThread implements Runnable{
 			boolean flag;
 			Key k;
 			Key privRSA;
+			Key AESKey;
 			User u;
 			String cle_chiffree;
 			String id_emetteur;
@@ -64,8 +65,7 @@ public class UDPListenThread implements Runnable{
 			String ip;
 			/*************************Premier paquet = Clé privé RSA*********************/
 			dso.receive(paquet);
-			st = new String(paquet.getData(), 0, paquet.getLength());
-			privRSA = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(st.getBytes()));
+			privRSA = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(paquet.getData()));
 			/*****************************************************************************/
 
 
@@ -109,13 +109,16 @@ public class UDPListenThread implements Runnable{
 					ip = dso.getInetAddress().getAddress().toString();
 					port_ = dso.getPort();
 					u = FindUser(username, port_, ip, null); //RSA_pub: On en pas besoin mais comment faire ?
-					//Dechiffrement de CleAESChiffre avec this.RSA_priv ?
-					//Update de u avec CleAESChiffre ?
+					//AESKey = Dechiffrement de CleAESChiffre avec this.RSA_priv
+					//u.setAES(AESKey);
 				}else if (cnx2.length == 2){ // Cas Client connu (a priori) et message chiffre
 					username = cnx2[0];
-					//u = FindUser(username, 0, null, null); //seuls des contacts avec cle peuvent nous parler
-					//Dechiffrement: mess = cn[1].dechiffrement(u.get_AESKey);
-					//System.out.print("\n"+ u.get_username()+ "> "+mess+"\n\nusername : ");
+					u = FindUser(username, 0, null, null); //seuls des contacts avec cle peuvent nous parler
+					AESKey = u.getAES();
+					Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5PADDING");
+					cipher.init(Cipher.DECRYPT_MODE, AESKey);
+					String mess = new String(cipher.doFinal(cnx2[1].getBytes()));
+					System.out.print("\n"+ u.get_username()+ "> "+mess+"\n\nusername : ");
 				}else if (cnx2.length == 4 && cnx2[1].equals("CLIENT")
 						&& cnx2[2].equals("UDP") && cnx2[3].equals("END")){ //Cas de deconnection
 					username = cnx2[0];

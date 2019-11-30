@@ -3,6 +3,9 @@ import java.net.*;
 import java.lang.*;
 import java.util.*;
 import java.security.*;
+import javax.crypto.*;
+
+
 public class ClientUDP{
 	ArrayList<User>	contacts; //Liste des locuteurs
 	int				udp_listen;
@@ -62,7 +65,10 @@ public class ClientUDP{
 				System.out.print("message : ");
 				s = sc.nextLine();
 				data = s.getBytes();
-				//Chiffrement AES avec u.getAESKey()
+				Key AESKey = u.getAES();
+				Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5PADDING");
+				cipher.init(Cipher.ENCRYPT_MODE, AESKey);
+				data = cipher.doFinal(data);
 				InetSocketAddress	ia = new InetSocketAddress(u.get_ip().substring(1),u.get_port());
 				DatagramPacket		paquet = new DatagramPacket(data,data.length,ia);
 				dso.send(paquet);
