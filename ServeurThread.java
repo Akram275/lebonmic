@@ -4,7 +4,9 @@ import java.lang.*;
 import java.util.*;
 import java.security.*;
 import java.lang.*;
+import java.security.*;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 
 public class ServeurThread implements Runnable{
   public Serveur s;
@@ -22,11 +24,14 @@ public class ServeurThread implements Runnable{
 
   public void SIGN_UP(BufferedReader br, PrintWriter pw){
     try{
+
+      Base64.Decoder decoder = Base64.getDecoder();
       System.out.println("on est dans SIGNUP");
       String username = br.readLine();
       String udp = br.readLine();
       String key_pub = br.readLine();
-      Key k = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(key_pub.getBytes()));
+      System.out.println(key_pub);
+      Key k = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(decoder.decode(key_pub)));
       String end = br.readLine();
 
       System.out.println ("username = {" + username + "}");
@@ -68,6 +73,7 @@ public class ServeurThread implements Runnable{
         //u.setKey(k);
         this.u = u;
         this.s.users.add(u);
+
         this.indice = this.s.users.size() - 1;
         pw.print("OK\n***\n");
         pw.flush();
@@ -85,6 +91,7 @@ public class ServeurThread implements Runnable{
 
       String username = br.readLine();
       String udp = br.readLine();
+      String key = br.readLine();
       String end = br.readLine();
       if(!end.equals("***")){
         pw.print("ERROR\nWRONG_ARGUMENT\n***\n");
@@ -140,7 +147,13 @@ public class ServeurThread implements Runnable{
                      this.s.products.get(i).get_products().get(j).get_desc()   + "\n" +
                      this.s.products.get(i).get_products().get(j).get_ref()   +"\n"
 
+
             );
+            System.out.print(this.s.products.get(i).get_products().get(j).get_name() + "\n" +
+                     this.s.products.get(i).get_products().get(j).get_price() + "\n" +
+                     this.s.products.get(i).get_products().get(j).get_desc()   + "\n" +
+                     this.s.products.get(i).get_products().get(j).get_ref()   +"\n"
+                     );
             pw.flush();
           }
           pw.print("END\n***\n");
@@ -337,6 +350,7 @@ public class ServeurThread implements Runnable{
               pw.print("OK\n"+this.s.users.get(i).get_ip()+   "\n"
               + this.s.users.get(i).get_port() +   "\n"
               + this.s.users.get(i).get_username() + "\n"
+              + this.s.users.get(i).getRSA()       + "\n"
               +"***\n");
               pw.flush();
               return;

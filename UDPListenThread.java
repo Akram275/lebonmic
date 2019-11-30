@@ -3,6 +3,8 @@ import java.net.*;
 import java.lang.*;
 import java.util.*;
 import java.security.*;
+import java.security.spec.X509EncodedKeySpec;
+import javax.crypto.*;
 
 public class UDPListenThread implements Runnable{
 	ClientUDP c;
@@ -45,12 +47,14 @@ public class UDPListenThread implements Runnable{
 
 		try{
 			DatagramSocket dso = new DatagramSocket(this.c.udp_listen);
-			byte[]data = new byte[100];
+			byte[] data = new byte[512];
 			DatagramPacket paquet = new DatagramPacket(data,data.length);
 			String st;
 			boolean flag;
 			Key k;
+			Key privRSA;
 			User u;
+			String cle_chiffree;
 			String id_emetteur;
 			String id_receveur;
 			int port_;
@@ -58,6 +62,12 @@ public class UDPListenThread implements Runnable{
 			String[] cnx2;
 			String username;
 			String ip;
+			/*************************Premier paquet = Clé privé RSA*********************/
+			dso.receive(paquet);
+			st = new String(paquet.getData(), 0, paquet.getLength());
+			privRSA = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(st.getBytes()));
+			/*****************************************************************************/
+
 
 			while(true){
 				flag = false;
@@ -65,37 +75,48 @@ public class UDPListenThread implements Runnable{
 				st = new String(paquet.getData(), 0, paquet.getLength());
 				cnx = st.split("\n");
 				cnx2 = st.split("***");
+				Base64.Decoder decoder = Base64.getDecoder();
 				//System.out.println("cnx" + cnx[0]);
-				if (cnx.size() == 6){//CAS: Client nous envoie SPEAK
+				System.out.println(st);
+				if (cnx.length == 6){//CAS: Client nous envoie SPEAK
 					ip = cnx[1];
 					port_ = Integer.parseInt(cnx[2]);
 					username = cnx[3];
-					k = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(cnx[4].getBytes()));
+					k = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(decoder.decode(cnx[4])));
+
 					if (cnx[0].equals("OK")){ // message de contact bien formate
-						FindUser(username, port_, ip, k);
+						u = FindUser(username, port_, ip, k);
 						byte[] data1;
-						//Generation/Chiffrement de CleAES (chiffrement grace a k)
-						//Update de u avec CleAESChifree
-						String mess = "[CleAESChiffree]"+"***"+username+"***"+this.c.username;
+						/**************** Creation de la clé AES *************************/
+						KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+            keyGen.init(128); // for example
+            SecretKey secretKey = keyGen.generateKey();
+						u.setAES(secretKey);
+						/*************************Envoie de la clé*********************/
+						String encodedKey = Base64.getEncoder().encodeToString(secretKey.getEncoded());
+						Cipher cipher = Cipher.getInstance("RSA");
+						cipher.init(Cipher.ENCRYPT_MODE, k);
+						cle_chiffree = Base64.getEncoder().encodeToString(cipher.doFinal(encodedKey.getBytes()));
+						String mess = cle_chiffree+"***"+username+"***"+this.c.username;
 						data1 = mess.getBytes();
 						DatagramSocket		dso1 = new DatagramSocket();
 						InetSocketAddress	ia = new InetSocketAddress(ip.substring(1),port_);
 						DatagramPacket		paquet2 = new DatagramPacket(data1,data1.length,ia);
 						dso1.send(paquet2);
 					}
-				}else if (cnx2.size() == 3){//Connection depuis un client
-					username = cnx[2];
+				}else if (cnx2.length == 3){//Connection depuis un client
+						username = cnx[2];
 					ip = dso.getInetAddress().getAddress().toString();
-					port_ = dso.getInetAddress().getPort();
+					port_ = dso.getPort();
 					u = FindUser(username, port_, ip, null); //RSA_pub: On en pas besoin mais comment faire ?
 					//Dechiffrement de CleAESChiffre avec this.RSA_priv ?
 					//Update de u avec CleAESChiffre ?
-				}else if (cnx2.size() == 2){ // Cas Client connu (a priori) et message chiffre
+				}else if (cnx2.length == 2){ // Cas Client connu (a priori) et message chiffre
 					username = cnx2[0];
 					//u = FindUser(username, 0, null, null); //seuls des contacts avec cle peuvent nous parler
 					//Dechiffrement: mess = cn[1].dechiffrement(u.get_AESKey);
 					//System.out.print("\n"+ u.get_username()+ "> "+mess+"\n\nusername : ");
-				}else if (cnx2.size() == 4 && cnx2[1].equals("CLIENT")
+				}else if (cnx2.length == 4 && cnx2[1].equals("CLIENT")
 						&& cnx2[2].equals("UDP") && cnx2[3].equals("END")){ //Cas de deconnection
 					username = cnx2[0];
 					//pop contact de la liste ?

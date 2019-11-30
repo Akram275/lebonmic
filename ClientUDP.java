@@ -2,12 +2,12 @@ import java.io.*;
 import java.net.*;
 import java.lang.*;
 import java.util.*;
-
+import java.security.*;
 public class ClientUDP{
 	ArrayList<User>	contacts; //Liste des locuteurs
 	int				udp_listen;
 	String			username;
-
+	Key k;                    //Notre clé RSA privée 
 
 	public ClientUDP(int udp_listen, String username){
 		this.udp_listen = udp_listen;
@@ -22,7 +22,7 @@ public class ClientUDP{
 		}
 		/*On récupére le port sur lequel on va écouter les Communications*/
 		int			udp_int = Integer.parseInt(args[0]);
-		Stringu		username = args[1];
+		String		username = args[1];
 		ClientUDP	cl_udp = new ClientUDP(udp_int, username);
 		Thread		t = new Thread(new UDPListenThread(cl_udp));
 		t.start();

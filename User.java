@@ -11,7 +11,8 @@ public class User{
   private boolean connected;
   private ArrayList<Article> products;
   private String IP;
-  private Key key;
+  private Key RSA; //La clé public RSA
+  private Key AES; //La clé AES
 
   public User(String username, int port, String ip, Key k){
     this.username = username;
@@ -19,7 +20,7 @@ public class User{
     this.connected = true;
     this.products = new ArrayList<Article>();
     this.IP = ip;
-    this.key = k;
+    this.RSA = k;
     //this.keys = new KeyPairGenerator("RSA");
   }
 
@@ -50,10 +51,13 @@ public class User{
   public void set_ip(String ip){
     this.IP = ip;
   }
-  public Key get_key(){
-    return this.key;
+  public Key getRSA(){
+    return this.RSA;
   }
-  public void setKey(Key k){
-    this.key = k;
+  public void setAES(Key k){
+    this.AES = AES;
+  }
+  public Key getAES(){
+    return this.AES;
   }
 }
