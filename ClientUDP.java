@@ -7,7 +7,7 @@ public class ClientUDP{
 	ArrayList<User>	contacts; //Liste des locuteurs
 	int				udp_listen;
 	String			username;
-	Key k;                    //Notre clé RSA privée 
+	Key k;                    //Notre clé RSA privée
 
 	public ClientUDP(int udp_listen, String username){
 		this.udp_listen = udp_listen;
@@ -25,7 +25,7 @@ public class ClientUDP{
 		String		username = args[1];
 		ClientUDP	cl_udp = new ClientUDP(udp_int, username);
 		Thread		t = new Thread(new UDPListenThread(cl_udp));
-		t.start();
+		t.start();   //Lancement du thread d'écoute 
 		Scanner		sc = new Scanner(System.in);
 		String		s;
 		User		u = null;

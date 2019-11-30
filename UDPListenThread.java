@@ -5,6 +5,7 @@ import java.util.*;
 import java.security.*;
 import java.security.spec.X509EncodedKeySpec;
 import javax.crypto.*;
+import java.security.spec.RSAPrivateKeySpec;
 
 public class UDPListenThread implements Runnable{
 	ClientUDP c;
@@ -52,7 +53,7 @@ public class UDPListenThread implements Runnable{
 			String st;
 			boolean flag;
 			Key k;
-			Key privRSA;
+			RSAPrivateKeySpec privRSA;
 			User u;
 			String cle_chiffree;
 			String id_emetteur;
@@ -62,10 +63,12 @@ public class UDPListenThread implements Runnable{
 			String[] cnx2;
 			String username;
 			String ip;
+			Base64.Decoder decoder = Base64.getDecoder();
 			/*************************Premier paquet = Clé privé RSA*********************/
 			dso.receive(paquet);
 			st = new String(paquet.getData(), 0, paquet.getLength());
-			privRSA = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(st.getBytes()));
+			System.out.println(st);
+			privRSA = (RSAPrivateKeySpec)KeyFactory.getInstance("RSA").generatePrivate(new X509EncodedKeySpec(decoder.decode(paquet.getData())));
 			/*****************************************************************************/
 
 
@@ -75,7 +78,7 @@ public class UDPListenThread implements Runnable{
 				st = new String(paquet.getData(), 0, paquet.getLength());
 				cnx = st.split("\n");
 				cnx2 = st.split("***");
-				Base64.Decoder decoder = Base64.getDecoder();
+
 				//System.out.println("cnx" + cnx[0]);
 				System.out.println(st);
 				if (cnx.length == 6){//CAS: Client nous envoie SPEAK
