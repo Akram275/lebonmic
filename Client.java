@@ -29,6 +29,7 @@ public class Client{
 			KeyPair kp;
 			Key pub;
 			String key_pub;
+			String key_priv;
 			String key_pub_distant;
 			Key pvt;
 			Base64.Encoder encoder = Base64.getEncoder();
@@ -37,7 +38,7 @@ public class Client{
 			String desc;
 			int prix;
 			int id;
-			String rep;
+			String rep = "";
 			Thread t = new Thread();
 			int port;
 			LauncherThread launch = null;
@@ -67,20 +68,25 @@ public class Client{
 						System.out.print("udp port n° : ");
 						port = Integer.parseInt(sc.nextLine());
 						udp_listen = port;
+						/****Key generation *********************/
 						kpg.initialize(1024);
 						kp = kpg.generateKeyPair();
 						pub = kp.getPublic();
 						pvt = kp.getPrivate();
 						key_pub = encoder.encodeToString(pub.getEncoded());
+						/****************************************/
+						System.out.println(key_pub);
 						pw.println(port);
+						pw.flush();
 						pw.println(key_pub);
 						pw.flush();
 						pw.print("***\n");
 						pw.flush();
 						//System.out.println("on est al");
 						//System.out.println ("AZPOEIZAPOIEPOZAIEPOZA");
+						rep = "";
 						while(!rep.equals("***")){
-							rep = "";
+
 							rep = br.readLine();
 							if (rep.equals("OK")){
 								launch = new LauncherThread(udp_listen, username);
@@ -106,14 +112,37 @@ public class Client{
 						udp_listen = port;
 						pw.println(port);
 						pw.flush();
+						/***********************generation de clé **************************/
+						kpg.initialize(1024);
+						kp = kpg.generateKeyPair();
+						pub = kp.getPublic();
+						pvt = kp.getPrivate();
+						key_pub = encoder.encodeToString(pub.getEncoded());
+						key_priv = encoder.encodeToString(pvt.getEncoded());
+						/*******************************************************************/
+						pw.println(key_pub);
+						pw.flush();
 						pw.print("***\n");
 						pw.flush();
+						rep = "";
 						while (!rep.equals("***")){
 							rep = br.readLine();
 							if (rep.equals("OK")){
 								launch = new LauncherThread(udp_listen, username);
 								t = new Thread(launch);
 								t.start();
+								byte[]		data;
+								String		mess = key_priv;
+								//System.out.println("j'envoie "+mess);
+								data = mess.getBytes();
+								try{
+									DatagramSocket		dso = new DatagramSocket();
+									//System.out.println(ip.substring(1));
+									InetSocketAddress	ia = new InetSocketAddress("localhost",udp_listen);
+									DatagramPacket		paquet = new DatagramPacket(data,data.length,ia);
+									dso.send(paquet);
+								}catch (Exception e){e.printStackTrace();}
+
 							}
 							if (!rep.equals("***")){
 								System.out.print("->" + rep + "\n");
@@ -123,7 +152,6 @@ public class Client{
 
 					case "ADDARTICLE" :
 						pw.println(cmd);
-						pw.flush();
 						pw.flush();
 						System.out.print("domain : ");
 						domaine = sc.nextLine();
@@ -161,6 +189,7 @@ public class Client{
 						pw.flush();
 						pw.println("***");
 						pw.flush();
+						rep = "";
 						while (!rep.equals("***")){
 							rep = br.readLine();
 							if (!rep.equals("***")){
@@ -176,8 +205,7 @@ public class Client{
 						pw.flush();
 						rep = "";
 						while (!rep.equals("***")){
-							rep = "";
-							rep += br.readLine();
+							rep = br.readLine();
 							if (!rep.equals("***")){
 								System.out.print("->" + rep + "\n");
 							}
@@ -226,6 +254,7 @@ public class Client{
 						pw.flush();
 						pw.println("***");
 						pw.flush();
+						rep = "";
 						while (!rep.equals("***")){
 							rep = br.readLine();
 							System.out.print("->" + rep + "\n");
@@ -237,6 +266,7 @@ public class Client{
 						pw.flush();
 						pw.println("***");
 						pw.flush();
+						rep = "";
 						while (!rep.equals("***")){
 							rep = br.readLine();
 							System.out.print("->" + rep + "\n");
@@ -248,6 +278,7 @@ public class Client{
 						pw.flush();
 						pw.println("***");
 						pw.flush();
+						rep = "";
 						while (!rep.equals("***")){
 							rep = br.readLine();
 							if (!rep.equals("***")){
@@ -280,13 +311,13 @@ public class Client{
 						key_pub_distant = br.readLine();
 						br.readLine(); // Les 3 étoiles
 						byte[]		data;
-						String		mess = "OK\n"ip+"\n"+udp_listen+"\n"+username+"\n"+key_pub_distant;
+						String		mess = "OK\n"+ip+"\n"+udp_listen+"\n"+username+"\n"+key_pub_distant;
 						//System.out.println("j'envoie "+mess);
 						data = mess.getBytes();
 						try{
 							DatagramSocket		dso = new DatagramSocket();
 							System.out.println(ip.substring(1));
-							InetSocketAddress	ia = new InetSocketAddress("localhost",port);
+							InetSocketAddress	ia = new InetSocketAddress("localhost",udp_listen);
 							DatagramPacket		paquet = new DatagramPacket(data,data.length,ia);
 							dso.send(paquet);
 						}catch (Exception e){e.printStackTrace();}
